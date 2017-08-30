@@ -1,0 +1,61 @@
+import org.jibble.pircbot.*;
+import java.util.*;
+
+
+public class TwitchBot extends PircBot{
+	public List<String> mods = new ArrayList<String>();
+	
+	public TwitchBot() {
+		this.setName("Bot");
+				
+	}
+	
+	public boolean isMod(String channel, String user) {
+		// Check if user is in the mod list for the channel
+		if (this.mods.contains(user)) {
+			return true;
+		} 
+		
+		// If user is not a mod send message and fail
+		this.sendMessage(channel, user + " is not a moderator of this channel.");
+		return false;
+	}
+	
+	public void addMod(String channel, String user) {
+		for (String mod : this.mods) {
+			if (mod != user) {
+				this.mods.add(user);
+				this.sendMessage(channel, ".unmod " + user);
+			}
+		}
+	}
+	
+	public void unMod(String channel, String user) {
+		
+	}
+	
+	public void onMessage (String channel, String sender, String login, String hostname, String message) {
+		if (message.equalsIgnoreCase("!time")) {
+			String time = new java.util.Date().toString();
+			sendMessage(channel, sender + ": It is now " + time + channel);
+		}
+		
+		if (isMod(channel, sender) && message.equalsIgnoreCase("!modtest")) {
+			sendMessage(channel, sender + "is a moderator");
+		}
+	}
+	
+	public void onJoin(String channel, String sender, String login, String hostname) {
+		sendRawLine("CAP REQ :twitch.tv/commands");
+		sendMessage(channel, ".mods"); // Get mod list by requesting mods in chat
+	}
+	
+	public void onNotice(String sourceNick, String soutceLogin, String sourceHostname, String target, String notice) {
+		// When mods are requested in chat update the mod list
+		if (notice.startsWith("The moderators of this room are: ")) {
+			notice = notice.replace("The moderators of this room are: ", "");
+			System.out.println(notice);
+			this.mods = Arrays.asList(notice.split(", "));
+		}
+	}
+}

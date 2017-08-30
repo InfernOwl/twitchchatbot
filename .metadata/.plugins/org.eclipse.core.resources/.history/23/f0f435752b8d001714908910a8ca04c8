@@ -1,0 +1,98 @@
+import org.jibble.pircbot.*;
+import java.util.*;
+
+
+public class TwitchBot extends PircBot{
+	public List<String> mods = new ArrayList<String>();
+	
+	public TwitchBot() {
+		this.setName("Bot");
+				
+	}
+	
+	public boolean isMod(String channel, String user) {
+		// Check if user is in the mod list for the channel
+		if (this.mods.contains(user)) {
+			return true;
+		} 
+		/*
+		// If user is not a mod send message and fail
+		this.sendMessage(channel, user + " is not a moderator of this channel.");
+		*/
+		return false;
+	}
+	
+	public void addMod(String channel, String user) {
+		boolean isMod = false;
+		
+		for (String mod : this.mods) {
+			if (mod == user) {
+				isMod = true;
+			}
+		}
+		
+		if (!isMod) {
+			this.mods.add(user);
+			this.sendMessage(channel, ".mod " + user);
+			this.sendMessage(channel, user + " has been added as a Mod");
+		} else {
+			this.sendMessage(channel, user + " is already a mod");
+		}
+	}
+	
+	public void unMod(String channel, String user) {
+		boolean isMod = false;
+		
+		for (String mod : this.mods) {
+			if (mod == user) {
+				isMod = true;
+			}
+		}
+		
+		if (isMod) {
+			this.mods.remove(user);
+			this.sendMessage(channel, ".unmod" + user);
+			this.sendMessage(channel, user + " has been removed from the mod list");
+		} else {
+			this.sendMessage(channel, user + " is not a mod.");
+		}
+	}
+	
+	public void onMessage (String channel, String sender, String login, String hostname, String message) {
+		List<String> messageSplit = new ArrayList<String>();
+		
+		if (message.equalsIgnoreCase("!time")) {
+			String time = new java.util.Date().toString();
+			sendMessage(channel, sender + ": It is now " + time + channel);
+		}
+		
+		if (this.isMod(channel, sender)) {
+			if (message.startsWith("!mod")) {
+				messageSplit = Arrays.asList(message.split(" ", 2));
+				System.out.println(messageSplit);
+				this.sendMessage(channel, "You have asked for " + messageSplit.get(1) + " to be a mod");
+				this.addMod(channel, messageSplit.get(1));
+			}
+			
+			if (message.startsWith("!unMod")) {
+				messageSplit.add((message.split(" ",  1)[1]));
+				this.sendMessage(channel, "You have asked for " + messageSplit.get(1) + " to no longer be a mod");
+				this.unMod(channel, messageSplit.get(1));
+			}
+		}
+	}
+	
+	public void onJoin(String channel, String sender, String login, String hostname) {
+		sendRawLine("CAP REQ :twitch.tv/commands");
+		sendMessage(channel, ".mods"); // Get mod list by requesting mods in chat
+	}
+	
+	public void onNotice(String sourceNick, String soutceLogin, String sourceHostname, String target, String notice) {
+		// When mods are requested in chat update the mod list
+		if (notice.startsWith("The moderators of this room are: ")) {
+			notice = notice.replace("The moderators of this room are: ", "");
+			this.mods = Arrays.asList(notice.split(", "));
+			System.out.println(this.mods);
+		}
+	}
+}
