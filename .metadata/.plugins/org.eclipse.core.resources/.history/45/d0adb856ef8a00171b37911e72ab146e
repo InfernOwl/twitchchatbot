@@ -1,0 +1,28 @@
+import org.jibble.pircbot.*;
+
+public class TwitchBot extends PircBot{
+	
+	public TwitchBot() {
+		this.setName("Bot");
+		
+	}
+	
+	static boolean isAdmin(String channel) {
+		sendCTCPCommand("wasterbot", "CAP REQ :twitch.tv/membership");
+		return true;
+	}
+	
+	public void onMessage (String channel, String sender, String login, String hostname, String message) {
+		if (message.equalsIgnoreCase("!time")) {
+			String time = new java.util.Date().toString();
+			sendMessage(channel, sender + ": It is now " + time);
+		}
+		
+		if (message.equalsIgnoreCase("!mods")) {
+			return TwitchBot.isAdmin("wasterbot");
+		}
+		
+		
+		
+	}
+}

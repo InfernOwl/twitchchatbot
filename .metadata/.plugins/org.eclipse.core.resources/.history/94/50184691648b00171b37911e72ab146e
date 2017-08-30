@@ -1,0 +1,45 @@
+import org.jibble.pircbot.*;
+import java.util.*;
+
+
+public class TwitchBot extends PircBot{
+	List<String> mods = new ArrayList<String>();
+	
+	public TwitchBot() {
+		this.setName("Bot");
+				
+	}
+	
+	/*
+	public boolean isAdmin(String channel) {
+		sendCTCPCommand("wasterbot", "CAP REQ :twitch.tv/membership");
+		return true;
+	}
+	*/
+	
+	public void onMessage (String channel, String sender, String login, String hostname, String message) {
+		if (message.equalsIgnoreCase("!time")) {
+			String time = new java.util.Date().toString();
+			sendMessage(channel, sender + ": It is now " + time + channel);
+		}
+		
+		if (message.equalsIgnoreCase("!mods")) {
+			for (String mod : mods) {
+				this.sendMessage("#wasterbot",  mod);
+				System.out.println(mod);
+			}
+		}
+	}
+	
+	public void onJoin(String channel, String sender, String login, String hostname) {
+		sendRawLine("CAP REQ :twitch.tv/commands");
+	}
+	
+	public void onNotice(String sourceNick, String soutceLogin, String sourceHostname, String target, String notice) {
+		if (notice.startsWith("The moderators of this room are: ")) {
+			notice = notice.replace("The moderators of this room are: ", "");
+			mods = Arrays.asList(notice.split(","));
+			System.out.println(notice.split(", "));
+		}
+	}
+}

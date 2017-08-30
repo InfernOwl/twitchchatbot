@@ -1,0 +1,9 @@
+import org.jibble.pircbot.*;
+
+public class TwitchBot extends PircBot{
+	
+	public TwitchBot() {
+		this.setName("Bot");
+		
+	}
+}

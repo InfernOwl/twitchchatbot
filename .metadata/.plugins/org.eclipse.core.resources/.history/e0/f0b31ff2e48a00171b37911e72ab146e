@@ -1,0 +1,10 @@
+import org.jibble.pircbot.*;
+
+public class TwitchBot {
+	
+	public TwitchBot() {
+		this.setName("Bot");
+		
+	}
+
+}
