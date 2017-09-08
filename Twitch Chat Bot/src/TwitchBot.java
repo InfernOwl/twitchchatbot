@@ -3,7 +3,7 @@ import java.util.*;
 
 
 public class TwitchBot extends PircBot{
-	public List<String> mods = new ArrayList<String>();
+	public List<String> mods = new ArrayList<>();
 	
 	public TwitchBot() {
 		this.setName("Bot");
@@ -26,7 +26,7 @@ public class TwitchBot extends PircBot{
 		boolean isMod = false;
 		
 		for (String mod : this.mods) {
-			if (mod == user) {
+			if (mod.equals(user)) {
 				isMod = true;
 			}
 		}
@@ -44,10 +44,14 @@ public class TwitchBot extends PircBot{
 		boolean isMod = false;
 		
 		for (String mod : this.mods) {
-			if (mod == user) {
+			System.out.println(mod + ", " + user);
+			if (mod.equals(user)) {
+				System.out.print("CHECK");
 				isMod = true;
 			}
 		}
+
+		this.sendMessage(channel, "You have asked for " + user + " to no longer be a mod");
 		
 		if (isMod) {
 			this.mods.remove(user);
@@ -67,17 +71,22 @@ public class TwitchBot extends PircBot{
 		}
 		
 		if (this.isMod(channel, sender)) {
-			if (message.startsWith("!mod")) {
+			if (message.startsWith("!mod ")) {
 				messageSplit = Arrays.asList(message.split(" ", 2));
 				System.out.println(messageSplit);
-				this.sendMessage(channel, "You have asked for " + messageSplit.get(1) + " to be a mod");
 				this.addMod(channel, messageSplit.get(1));
 			}
 			
-			if (message.startsWith("!unMod")) {
-				messageSplit.add((message.split(" ",  1)[1]));
-				this.sendMessage(channel, "You have asked for " + messageSplit.get(1) + " to no longer be a mod");
+			if (message.startsWith("!unmod ")) {
+				messageSplit = Arrays.asList(message.split(" ",  2));
 				this.unMod(channel, messageSplit.get(1));
+			}
+			
+			if (message.equalsIgnoreCase("!modcheck")) {
+				this.sendMessage(channel, "The current mod list includes");
+				for (String mod : this.mods) {
+					this.sendMessage(channel, mod);
+				}
 			}
 		}
 	}
@@ -91,7 +100,11 @@ public class TwitchBot extends PircBot{
 		// When mods are requested in chat update the mod list
 		if (notice.startsWith("The moderators of this room are: ")) {
 			notice = notice.replace("The moderators of this room are: ", "");
-			this.mods = Arrays.asList(notice.split(", "));
+			String[] modlist = notice.split(", ");
+			
+			for (String mod : modlist) {
+				this.mods.add(mod);
+			}
 			System.out.println(this.mods);
 		}
 	}
